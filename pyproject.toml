@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "dikson-ai-system"
 version = "0.1.0"
@@ -17,6 +21,9 @@ dependencies = [
 
 [project.scripts]
 dikson-li = "dikson_li.cli:main"
+
+[tool.setuptools]
+packages = ["app", "dikson_li"]
 
 [project.optional-dependencies]
 dev = [
