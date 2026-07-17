@@ -1,8 +1,9 @@
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+from app.memory import JsonlProjectMemory, MemoryCreate, MemoryKind, MemoryRecord
 from app.research import answer
-from app.storage import create_project, extract_text, load_project, save_project, save_source, search_sources
+from app.storage import create_project, extract_text, load_project, save_source, search_sources
 
 app = FastAPI(title="DIKSON AI System", version="0.1.0")
 
@@ -10,11 +11,6 @@ app = FastAPI(title="DIKSON AI System", version="0.1.0")
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=2)
     description: str = ""
-
-
-class MemoryEntry(BaseModel):
-    text: str = Field(min_length=1)
-    kind: str = "confirmed"
 
 
 class ResearchRequest(BaseModel):
@@ -39,16 +35,40 @@ def projects_get(project_id: str) -> dict:
         raise HTTPException(status_code=404, detail="Проект не найден") from exc
 
 
-@app.post("/projects/{project_id}/memory")
-def memory_add(project_id: str, payload: MemoryEntry) -> dict:
+@app.post("/projects/{project_id}/memory", response_model=MemoryRecord, status_code=201)
+def memory_add(project_id: str, payload: MemoryCreate) -> MemoryRecord:
     try:
-        project = load_project(project_id)
+        load_project(project_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Проект не найден") from exc
-    entry = {"kind": payload.kind, "text": payload.text}
-    project["memory"].append(entry)
-    save_project(project)
-    return entry
+    return JsonlProjectMemory(project_id).append(payload)
+
+
+@app.get("/projects/{project_id}/memory", response_model=list[MemoryRecord])
+def memory_list(
+    project_id: str,
+    kind: MemoryKind | None = None,
+    tag: str | None = None,
+    limit: int = 50,
+) -> list[MemoryRecord]:
+    try:
+        load_project(project_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Проект не найден") from exc
+    if not 1 <= limit <= 500:
+        raise HTTPException(status_code=422, detail="limit must be between 1 and 500")
+    return JsonlProjectMemory(project_id).list(kind=kind, tag=tag, limit=limit)
+
+
+@app.get("/projects/{project_id}/memory/{memory_id}", response_model=MemoryRecord)
+def memory_get(project_id: str, memory_id: str) -> MemoryRecord:
+    try:
+        load_project(project_id)
+        return JsonlProjectMemory(project_id).get(memory_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Проект не найден") from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Запись памяти не найдена") from exc
 
 
 @app.post("/projects/{project_id}/sources")
