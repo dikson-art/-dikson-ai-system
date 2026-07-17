@@ -27,11 +27,11 @@ def main() -> int:
 
     if args.command == "remember":
         record = store.append(project=args.project, kind=args.kind, content=args.content)
-        print(json.dumps(record.__dict__, ensure_ascii=False, indent=2))
+        print(json.dumps(record.to_dict(), ensure_ascii=False, indent=2))
         return 0
 
     records = store.list(args.project, limit=args.limit)
-    print(json.dumps([record.__dict__ for record in records], ensure_ascii=False, indent=2))
+    print(json.dumps([record.to_dict() for record in records], ensure_ascii=False, indent=2))
     return 0
 
 
