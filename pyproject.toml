@@ -15,6 +15,9 @@ dependencies = [
   "pyyaml>=6.0,<7"
 ]
 
+[project.scripts]
+dikson-li = "dikson_li.cli:main"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.4,<9",
