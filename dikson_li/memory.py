@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -14,6 +14,9 @@ class MemoryRecord:
     content: str
     created_at: str
     metadata: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 class JsonlMemoryStore:
@@ -50,7 +53,7 @@ class JsonlMemoryStore:
         )
         path = self.root / f"{self._safe_name(normalized_project)}.jsonl"
         with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record.__dict__, ensure_ascii=False) + "\n")
+            handle.write(json.dumps(record.to_dict(), ensure_ascii=False) + "\n")
         return record
 
     def list(self, project: str, *, limit: int = 50) -> list[MemoryRecord]:
