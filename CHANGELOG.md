@@ -6,6 +6,17 @@
 
 ### Added
 
+- Добавлен единый Semantic Search по Memory, Wiki, Source chunks и явным Knowledge Graph entities.
+- Добавлены provider-neutral `EmbeddingModel`, автономный multilingual local backend и опциональный OpenAI Embeddings adapter.
+- Добавлены cosine ranking, морфологические признаки, graph context boost, фильтры типа/score/archive и безопасные ошибки API.
+- Добавлены core/service/API тесты ранжирования, всех источников, совместимости source results, OpenAI batch contract и повреждённых данных.
+
+### Changed
+
+- `/projects/{project_id}/search` и Research Engine используют единый поисковый сервис; старый source search оставлен только как совместимый адаптер.
+
+### Added
+
 - Добавлен Knowledge Graph с автоматической проекцией Projects, Memory, Tasks, Wiki Pages и Documents.
 - Добавлены явные People, Articles, Research и другие graph entities, типизированные edges, фильтры и neighbors API.
 - Добавлено append-only JSONL-хранилище графа с `FileLock`, corruption detection и безопасными HTTP-ошибками.

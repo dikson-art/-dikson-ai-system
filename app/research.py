@@ -1,17 +1,23 @@
 from openai import OpenAI
 
 from app.config import settings
-from app.storage import load_project, search_sources
+from app.search_service import SemanticSearchService
+from app.storage import load_project
 
 
 def answer(project_id: str, question: str) -> dict:
     project = load_project(project_id)
-    evidence = search_sources(project_id, question)
+    evidence = [
+        hit.model_dump(mode="json", exclude_none=True)
+        for hit in SemanticSearchService(settings.dikson_data_dir, project_id).search(
+            question, limit=6
+        )
+    ]
     if not evidence:
         return {"answer": "В материалах проекта не найдено достаточно данных для ответа.", "evidence": [], "used_model": False}
 
     context = "\n\n".join(
-        f"[{item['filename']} — фрагмент {item['chunk']}]\n{item['text']}" for item in evidence
+        f"[{item['title']} — {item['entity_type']}]\n{item['text']}" for item in evidence
     )
     if not settings.openai_api_key:
         return {
