@@ -37,3 +37,14 @@ History / Backlinks Index
 Wiki-страницы связываются с памятью через `related_memory_ids`, а память предусматривает `related_page_ids`. Подтверждение гипотезы остаётся явной операцией, а не автоматическим изменением Wiki.
 
 Wiki Service задаёт project root; front matter validation, atomic write, history, backlinks, slug uniqueness и search находятся в каноническом `dikson_li.wiki`.
+
+## Knowledge Graph flow
+
+```text
+Memory Core ─┐
+Wiki Core ───┼─→ Graph Projection ─┐
+Sources ─────┘                     ├─→ Graph Snapshot / Neighbors
+Explicit Entities → JSONL Graph ──┘
+```
+
+Memory, Wiki и documents остаются источниками истины. Graph Projection создаёт стабильные ссылки при чтении; JSONL Repository хранит только явные внешние сущности и пользовательские связи. Такая схема исключает рассинхронизацию копий.

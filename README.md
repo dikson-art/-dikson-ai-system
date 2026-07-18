@@ -46,3 +46,14 @@ Wiki хранит страницы как Markdown с валидируемым Y
 - `GET /projects/{project_id}/wiki/pages/{page_id}/history` — история изменений.
 
 Wiki связывается с памятью через `related_memory_ids`; Memory Core предусматривает обратные `related_page_ids`. Автоматического продвижения гипотез в подтверждённые Wiki-факты нет.
+
+## Knowledge Graph API
+
+Knowledge Graph строит живую проекцию Memory, Wiki и загруженных документов по стабильным ID. People, Articles, Research и другие внешние сущности сохраняются отдельно в append-only JSONL, поэтому граф не копирует доменные данные.
+
+- `GET /projects/{project_id}/graph` — snapshot с фильтрами `node_type`, `edge_type`, `q`;
+- `POST /projects/{project_id}/graph/nodes` — добавить внешнюю сущность;
+- `POST /projects/{project_id}/graph/edges` — добавить типизированную связь;
+- `GET /projects/{project_id}/graph/nodes/{node_id}/neighbors` — ближайшее окружение узла.
+
+Проекционные узлы используют ID `project:*`, `memory:*`, `wiki:*`, `source:*`. Явные graph nodes/edges хранятся в `data/projects/{project_id}/graph/*.jsonl`.
