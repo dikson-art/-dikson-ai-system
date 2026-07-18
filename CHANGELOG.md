@@ -6,6 +6,17 @@
 
 ### Added
 
+- Добавлен Agent Framework с семью встроенными ролями: Research, Planning, Memory, Wiki, Coding, Review и Documentation.
+- Добавлены deny-by-default tool policy, типизированные runs/proposals/decisions и append-only audit repository.
+- Добавлена подтверждаемая и идемпотентная agent memory через канонический Memory Core без второго хранилища памяти.
+- Добавлены Agent Registry/API endpoints и тесты policy isolation, corruption safety, single-decision и approval workflow.
+
+### Changed
+
+- `AGENT_PROTOCOL` расширен manifests, proposal lifecycle, human confirmation и границей будущей Task Queue.
+
+### Added
+
 - Добавлен единый Semantic Search по Memory, Wiki, Source chunks и явным Knowledge Graph entities.
 - Добавлены provider-neutral `EmbeddingModel`, автономный multilingual local backend и опциональный OpenAI Embeddings adapter.
 - Добавлены cosine ranking, морфологические признаки, graph context boost, фильтры типа/score/archive и безопасные ошибки API.

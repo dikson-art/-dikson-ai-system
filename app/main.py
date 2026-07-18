@@ -4,6 +4,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from filelock import Timeout
 from pydantic import BaseModel, Field
 
+from app.agent_api import router as agent_router
 from app.config import settings
 from app.graph_service import KnowledgeGraphService
 from app.memory_service import MemoryService
@@ -47,7 +48,8 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.5.0")
+app = FastAPI(title="DIKSON AI System", version="0.6.0")
+app.include_router(agent_router)
 
 
 class ProjectCreate(BaseModel):

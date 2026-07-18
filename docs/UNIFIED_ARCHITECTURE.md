@@ -60,3 +60,17 @@ Graph ──┘                              └─ OpenAI
 ```
 
 Search Projection существует только во время чтения. `SemanticSearchEngine` не знает о FastAPI, файловых путях или OpenAI SDK; он получает типизированные `SearchDocument` и реализацию `EmbeddingModel`. Source-only функция оставлена как тонкий compatibility adapter к тому же сервису, поэтому независимой второй реализации поиска нет.
+
+## Agent Framework flow
+
+```text
+Objective + requested tools
+           ↓
+Agent Registry / deny-by-default policy
+           ↓
+Append-only Run → Proposal → Human Decision
+                                  ↓ approved agent_memory
+                          Canonical Memory Core
+```
+
+Agent audit streams описывают процесс, но не владеют доменными знаниями. Каждый agent memory namespace реализован стабильным tag в Memory Core. Фактическое выполнение tools будет подключено Task Queue и обязано повторно проверять manifest роли перед dispatch.
