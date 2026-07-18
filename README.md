@@ -34,3 +34,15 @@ dikson-li recall my-project --limit 20
 ```
 
 Путь данных задаётся переменной `DIKSON_DATA_DIR` и одинаков для CLI и API.
+## Wiki API
+
+Wiki хранит страницы как Markdown с валидируемым YAML front matter в `data/projects/{project_id}/wiki/pages`. Обновления и архивирование создают immutable history snapshots; физическое удаление endpoint не выполняет.
+
+- `POST /projects/{project_id}/wiki/pages` — создать страницу;
+- `GET /projects/{project_id}/wiki/pages` — список и поиск по `q`, `tag`, `include_archived`;
+- `GET /projects/{project_id}/wiki/pages/{page_id}` — страница и backlinks;
+- `PUT /projects/{project_id}/wiki/pages/{page_id}` — обновить с actor/reason;
+- `DELETE /projects/{project_id}/wiki/pages/{page_id}` — безопасно архивировать;
+- `GET /projects/{project_id}/wiki/pages/{page_id}/history` — история изменений.
+
+Wiki связывается с памятью через `related_memory_ids`; Memory Core предусматривает обратные `related_page_ids`. Автоматического продвижения гипотез в подтверждённые Wiki-факты нет.

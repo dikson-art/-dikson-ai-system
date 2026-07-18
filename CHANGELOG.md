@@ -5,6 +5,12 @@
 ## Unreleased
 ### Added
 
+- Добавлен Wiki CRUD на Markdown + YAML front matter с поиском, backlinks, source/memory/page links и защитой duplicate slug.
+- Добавлена immutable история create/update/archive с actor, reason, operation ID и предыдущей версией.
+- Добавлены soft archive и атомарная запись Wiki-файлов без физического удаления.
+- Добавлены Wiki Core и API-тесты для русского текста, истории, поиска, backlinks и безопасных ошибок.
+### Added
+
 - Добавлено единое типизированное Memory Core для FastAPI и CLI с фильтрами, связями, Unicode и безопасной межпроцессной записью.
 - Добавлена одноразовая миграция старых CLI JSONL-журналов с детерминированными ID.
 - Добавлены сквозные и отказоустойчивые тесты API, CLI и core.

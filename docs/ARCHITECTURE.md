@@ -14,7 +14,7 @@
 - `dikson_li` — канонические модели и доменное ядро;
 - `app` — FastAPI, application services и HTTP-адаптеры;
 - `data/projects` — локальные данные проектов;
-- `wiki` — Markdown-документация и будущий Wiki Engine.
+- `wiki` — Markdown-документация проекта и страницы Wiki Engine.
 
 ## Memory
 
@@ -30,9 +30,16 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Wiki CRUD, история и backlinks.
-2. Knowledge Graph.
-3. Semantic Search.
-4. Реестр агентов и skills.
-5. Очередь задач и журнал запусков.
-6. Локальный web-интерфейс.
+1. Knowledge Graph.
+2. Semantic Search.
+3. Реестр агентов и skills.
+4. Очередь задач и журнал запусков.
+5. Локальный web-интерфейс.
+
+## Wiki
+
+`dikson_li.wiki.MarkdownWikiStore` является каноническим Wiki-ядром. `app.wiki_service` только задаёт project-scoped путь. Страницы хранятся как Markdown с YAML front matter; PyYAML используется только через `safe_load` и `safe_dump`.
+
+Каждое update/archive сначала сохраняет предыдущую страницу в `history/{page_id}` вместе с actor, reason, operation ID и UTC timestamp. DELETE выполняет soft archive. Запись страниц и snapshots атомарна через временный файл, `fsync` и `os.replace`; операции проекта сериализуются `FileLock`.
+
+Backlinks вычисляются по `related_page_ids` и ссылкам `[[page_id]]`. Поиск охватывает заголовок и Markdown-текст, фильтр тегов использует front matter.

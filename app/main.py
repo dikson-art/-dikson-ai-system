@@ -1,12 +1,14 @@
 from typing import Annotated
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from filelock import Timeout
 from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.memory_service import MemoryService
 from app.research import answer
 from app.storage import create_project, extract_text, load_project, save_source, search_sources
+from app.wiki_service import WikiService
 from dikson_li.memory import (
     MemoryCorruptionError,
     MemoryCreate,
@@ -14,8 +16,18 @@ from dikson_li.memory import (
     MemoryRecord,
     MemoryStorageError,
 )
+from dikson_li.wiki import (
+    DuplicateSlugError,
+    WikiCorruptionError,
+    WikiHistoryEntry,
+    WikiPage,
+    WikiPageCreate,
+    WikiPageUpdate,
+    WikiStatus,
+    WikiStorageError,
+)
 
-app = FastAPI(title="DIKSON AI System", version="0.2.0")
+app = FastAPI(title="DIKSON AI System", version="0.3.0")
 
 
 class ProjectCreate(BaseModel):
@@ -136,3 +148,107 @@ def research(project_id: str, payload: ResearchRequest) -> dict:
         return answer(project_id, payload.question)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Проект не найден") from exc
+
+def wiki_store(project_id: str):
+    ensure_project(project_id)
+    return WikiService(settings.dikson_data_dir, project_id).store
+
+
+def wiki_storage_error() -> HTTPException:
+    return HTTPException(status_code=500, detail="Локальное Wiki-хранилище повреждено")
+
+
+@app.post(
+    "/projects/{project_id}/wiki/pages",
+    response_model=WikiPage,
+    status_code=201,
+    summary="Создать Wiki-страницу",
+)
+def wiki_page_create(project_id: str, payload: WikiPageCreate) -> WikiPage:
+    try:
+        return wiki_store(project_id).create(project_id, payload)
+    except DuplicateSlugError as exc:
+        raise HTTPException(status_code=409, detail="Wiki slug уже существует") from exc
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc
+
+
+@app.get(
+    "/projects/{project_id}/wiki/pages",
+    response_model=list[WikiPage],
+    summary="Найти Wiki-страницы",
+)
+def wiki_pages_list(
+    project_id: str,
+    tag: str | None = None,
+    q: str | None = None,
+    include_archived: bool = False,
+) -> list[WikiPage]:
+    try:
+        status = None if include_archived else WikiStatus.ACTIVE
+        return wiki_store(project_id).list(status=status, tag=tag, query=q)
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc
+
+
+@app.get(
+    "/projects/{project_id}/wiki/pages/{page_id}",
+    response_model=WikiPage,
+    summary="Получить Wiki-страницу и backlinks",
+)
+def wiki_page_get(project_id: str, page_id: str) -> WikiPage:
+    try:
+        return wiki_store(project_id).get(page_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Wiki-страница не найдена") from exc
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc
+
+
+@app.put(
+    "/projects/{project_id}/wiki/pages/{page_id}",
+    response_model=WikiPage,
+    summary="Обновить Wiki-страницу с сохранением истории",
+)
+def wiki_page_update(project_id: str, page_id: str, payload: WikiPageUpdate) -> WikiPage:
+    try:
+        return wiki_store(project_id).update(page_id, payload)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Wiki-страница не найдена") from exc
+    except DuplicateSlugError as exc:
+        raise HTTPException(status_code=409, detail="Wiki slug уже существует") from exc
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc
+
+
+@app.delete(
+    "/projects/{project_id}/wiki/pages/{page_id}",
+    response_model=WikiPage,
+    summary="Архивировать Wiki-страницу без физического удаления",
+)
+def wiki_page_archive(
+    project_id: str,
+    page_id: str,
+    actor: str = "user",
+    reason: str = "archive",
+) -> WikiPage:
+    try:
+        return wiki_store(project_id).archive(page_id, actor=actor, reason=reason)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Wiki-страница не найдена") from exc
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc
+
+
+@app.get(
+    "/projects/{project_id}/wiki/pages/{page_id}/history",
+    response_model=list[WikiHistoryEntry],
+    summary="Получить историю Wiki-страницы",
+)
+def wiki_page_history(project_id: str, page_id: str) -> list[WikiHistoryEntry]:
+    try:
+        return wiki_store(project_id).history(page_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Wiki-страница не найдена") from exc
+    except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
+        raise wiki_storage_error() from exc

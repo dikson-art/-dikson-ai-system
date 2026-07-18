@@ -22,7 +22,7 @@ FastAPI проверяет существование проекта и прео
 
 Публичных операций update/delete нет. Новая информация создаёт новую запись и может ссылаться на предыдущие через `related_memory_ids`. `FileLock` сериализует процессы на одной машине; корректность блокировок на нестандартных сетевых файловых системах зависит от реализации файловой системы и пока не гарантируется.
 
-## Wiki target flow
+## Wiki flow
 
 ```text
 FastAPI
@@ -34,4 +34,6 @@ Markdown + YAML Front Matter
 History / Backlinks Index
 ```
 
-Wiki-страницы будут связываться с памятью через `related_memory_ids`, а память уже предусматривает `related_page_ids`. Подтверждение гипотезы останется явной операцией, а не автоматическим изменением Wiki.
+Wiki-страницы связываются с памятью через `related_memory_ids`, а память предусматривает `related_page_ids`. Подтверждение гипотезы остаётся явной операцией, а не автоматическим изменением Wiki.
+
+Wiki Service задаёт project root; front matter validation, atomic write, history, backlinks, slug uniqueness и search находятся в каноническом `dikson_li.wiki`.
