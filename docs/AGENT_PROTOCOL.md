@@ -60,6 +60,6 @@ Proposal содержит agent/run IDs, тип, title, summary, JSON payload и
 
 У каждого агента есть `memory_tag` вида `agent:{agent_id}`. Agent-memory proposal обязан пройти Pydantic-валидацию `MemoryCreate` и подтверждение. После явного commit он идемпотентно записывается через канонический `JsonlMemoryStore`; отдельного agent memory store нет.
 
-## Граница текущего этапа
+## Выполнение
 
-Framework предоставляет registry, policy enforcement, runs, proposals, decisions и approved memory commit. Асинхронное выполнение, retries, leases и workers относятся к следующему этапу Task Queue.
+Task Queue связывает Agent Run с worker через ограниченный lease. Queue отвечает за доставку, retries и lifecycle audit, но worker обязан выполнять только tools из уже подтверждённого run manifest.

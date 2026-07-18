@@ -25,7 +25,7 @@ Agent Framework Service
 
 Реестр содержит ровно семь ролей: Research, Planning, Memory, Wiki, Coding, Review и Documentation. Manifest каждой роли содержит responsibilities, allowlist tools, допустимые proposal types и уникальный memory tag.
 
-Реестр является кодовым контрактом версии `0.6.0`. Runtime-регистрация произвольных агентов намеренно не поддерживается: до появления подписанных manifests и migration policy она ослабила бы безопасность allowlist.
+Реестр является кодовым контрактом Agent Framework. Runtime-регистрация произвольных агентов намеренно не поддерживается: до появления подписанных manifests и migration policy она ослабила бы безопасность allowlist.
 
 ## Хранение
 
@@ -59,3 +59,7 @@ Agent Framework Service
 - неподтверждённая память не коммитится;
 - повторный commit возвращает ту же Memory record;
 - Agent Framework не исполняет shell, Git или сетевые операции самостоятельно.
+
+## Выполнение
+
+Task Queue принимает только существующие Agent Runs и добавляет durable delivery, leases, retries и audit events. Agent Framework остаётся источником identity и tool policy; очередь не расширяет разрешения роли.

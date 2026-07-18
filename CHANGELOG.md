@@ -6,6 +6,13 @@
 
 ### Added
 
+- Добавлена durable Task Queue, связанная только с policy-validated Agent Runs.
+- Добавлены priority, delayed availability, project idempotency, atomic leases, heartbeat, retries, cancellation и dead-letter.
+- Добавлены append-only task/event streams, lease reclamation и публичные API-модели без утечки lease token.
+- Добавлены core/API тесты concurrency claim, stale token, retry delay, lease expiry, terminal failures и corruption safety.
+
+### Added
+
 - Добавлен Agent Framework с семью встроенными ролями: Research, Planning, Memory, Wiki, Coding, Review и Documentation.
 - Добавлены deny-by-default tool policy, типизированные runs/proposals/decisions и append-only audit repository.
 - Добавлена подтверждаемая и идемпотентная agent memory через канонический Memory Core без второго хранилища памяти.
