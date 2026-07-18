@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dikson-ai-system"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local project memory and research assistant powered by OpenAI"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,7 +16,8 @@ dependencies = [
   "python-multipart>=0.0.20,<1",
   "pypdf>=5.8,<6",
   "python-docx>=1.2,<2",
-  "pyyaml>=6.0,<7"
+  "pyyaml>=6.0,<7",
+  "filelock>=3.18,<4"
 ]
 
 [project.scripts]
