@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+from pathlib import Path
 
 from .memory import JsonlMemoryStore
 
@@ -13,7 +15,11 @@ def build_parser() -> argparse.ArgumentParser:
     remember = subparsers.add_parser("remember", help="Store a project memory record")
     remember.add_argument("project")
     remember.add_argument("content")
-    remember.add_argument("--kind", default="note")
+    remember.add_argument(
+        "--kind",
+        choices=["fact", "decision", "task", "hypothesis", "source", "summary"],
+        default="fact",
+    )
 
     recall = subparsers.add_parser("recall", help="Read recent project memory")
     recall.add_argument("project")
@@ -23,7 +29,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    store = JsonlMemoryStore()
+    data_dir = Path(os.getenv("DIKSON_DATA_DIR", "data"))
+    store = JsonlMemoryStore(data_dir / "projects", legacy_root=data_dir / "memory")
 
     if args.command == "remember":
         record = store.append(project=args.project, kind=args.kind, content=args.content)
