@@ -16,6 +16,7 @@ from app.search_service import (
     SemanticSearchService,
 )
 from app.storage import create_project, extract_text, load_project, save_source
+from app.task_api import router as task_router
 from app.wiki_service import WikiService
 from dikson_li.memory import (
     MemoryCorruptionError,
@@ -48,8 +49,9 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.6.0")
+app = FastAPI(title="DIKSON AI System", version="0.7.0")
 app.include_router(agent_router)
+app.include_router(task_router)
 
 
 class ProjectCreate(BaseModel):
