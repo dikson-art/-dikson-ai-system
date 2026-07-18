@@ -30,10 +30,10 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Реестр агентов и skills.
-2. Очередь задач и журнал запусков.
-3. Planning System.
-4. Research Engine.
+1. Очередь задач и журнал выполнений.
+2. Planning System.
+3. Research Engine.
+4. Git Automation.
 5. Локальный web-интерфейс.
 
 ## Wiki
@@ -57,3 +57,9 @@ Backlinks вычисляются по `related_page_ids` и ссылкам `[[pa
 `dikson_li.search.SemanticSearchEngine` является каноническим ядром ранжирования и зависит только от порта `EmbeddingModel`. `app.search_service.SemanticSearchService` проецирует Memory, Wiki, Source chunks и явные Graph nodes, не записывая копию контента.
 
 Локальный backend использует детерминированный multilingual feature hashing; OpenAI adapter подключается конфигурацией и вызывает batch Embeddings API. Косинусное сходство дополняется ограниченным graph context boost. Проекционные graph nodes Memory/Wiki/Source не создают повторных результатов.
+
+## Agent Framework
+
+`dikson_li.agents.AgentRegistry` определяет семь встроенных ролей, их responsibilities, tool allowlists, proposal types и memory namespaces. `AgentFrameworkService` применяет policy до записи запуска, валидирует предложения и интегрирует подтверждённую agent memory с каноническим Memory Core.
+
+Runs, proposals и decisions хранятся раздельными append-only JSONL streams. Decision не изменяет proposal, а добавляет audit event. Доступ к собственным знаниям агента является фильтром `agent:{id}` над общим `memory.jsonl`, поэтому второй реализации памяти нет.
