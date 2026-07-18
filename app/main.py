@@ -5,6 +5,7 @@ from filelock import Timeout
 from pydantic import BaseModel, Field
 
 from app.config import settings
+from app.graph_service import KnowledgeGraphService
 from app.memory_service import MemoryService
 from app.research import answer
 from app.storage import create_project, extract_text, load_project, save_source, search_sources
@@ -15,6 +16,18 @@ from dikson_li.memory import (
     MemoryKind,
     MemoryRecord,
     MemoryStorageError,
+)
+from dikson_li.graph import (
+    DuplicateEntityError,
+    EdgeType,
+    GraphCorruptionError,
+    GraphEdge,
+    GraphEdgeCreate,
+    GraphNode,
+    GraphNodeCreate,
+    GraphSnapshot,
+    GraphStorageError,
+    NodeType,
 )
 from dikson_li.wiki import (
     DuplicateSlugError,
@@ -27,7 +40,7 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.3.0")
+app = FastAPI(title="DIKSON AI System", version="0.4.0")
 
 
 class ProjectCreate(BaseModel):
@@ -252,3 +265,75 @@ def wiki_page_history(project_id: str, page_id: str) -> list[WikiHistoryEntry]:
         raise HTTPException(status_code=404, detail="Wiki-страница не найдена") from exc
     except (WikiCorruptionError, WikiStorageError, Timeout) as exc:
         raise wiki_storage_error() from exc
+
+
+def graph_service(project_id: str) -> KnowledgeGraphService:
+    ensure_project(project_id)
+    return KnowledgeGraphService(settings.dikson_data_dir, project_id)
+
+
+def graph_storage_error() -> HTTPException:
+    return HTTPException(status_code=500, detail="Локальное Graph-хранилище повреждено")
+
+
+@app.get(
+    "/projects/{project_id}/graph",
+    response_model=GraphSnapshot,
+    summary="Получить Knowledge Graph проекта",
+)
+def graph_snapshot(
+    project_id: str,
+    node_type: NodeType | None = None,
+    edge_type: EdgeType | None = None,
+    q: str | None = None,
+) -> GraphSnapshot:
+    try:
+        return graph_service(project_id).snapshot(
+            node_type=node_type, edge_type=edge_type, query=q
+        )
+    except (GraphCorruptionError, GraphStorageError, Timeout) as exc:
+        raise graph_storage_error() from exc
+
+
+@app.post(
+    "/projects/{project_id}/graph/nodes",
+    response_model=GraphNode,
+    status_code=201,
+    summary="Добавить внешнюю сущность в Knowledge Graph",
+)
+def graph_node_create(project_id: str, payload: GraphNodeCreate) -> GraphNode:
+    try:
+        return graph_service(project_id).add_node(payload)
+    except DuplicateEntityError as exc:
+        raise HTTPException(status_code=409, detail="Graph entity уже существует") from exc
+    except (GraphCorruptionError, GraphStorageError, Timeout) as exc:
+        raise graph_storage_error() from exc
+
+
+@app.post(
+    "/projects/{project_id}/graph/edges",
+    response_model=GraphEdge,
+    status_code=201,
+    summary="Добавить связь в Knowledge Graph",
+)
+def graph_edge_create(project_id: str, payload: GraphEdgeCreate) -> GraphEdge:
+    try:
+        return graph_service(project_id).add_edge(payload)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Graph node не найден") from exc
+    except (GraphCorruptionError, GraphStorageError, Timeout) as exc:
+        raise graph_storage_error() from exc
+
+
+@app.get(
+    "/projects/{project_id}/graph/nodes/{node_id}/neighbors",
+    response_model=GraphSnapshot,
+    summary="Получить соседей узла Knowledge Graph",
+)
+def graph_neighbors(project_id: str, node_id: str) -> GraphSnapshot:
+    try:
+        return graph_service(project_id).neighbors(node_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Graph node не найден") from exc
+    except (GraphCorruptionError, GraphStorageError, Timeout) as exc:
+        raise graph_storage_error() from exc

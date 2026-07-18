@@ -3,6 +3,13 @@
 Все заметные изменения проекта документируются в этом файле.
 
 ## Unreleased
+
+### Added
+
+- Добавлен Knowledge Graph с автоматической проекцией Projects, Memory, Tasks, Wiki Pages и Documents.
+- Добавлены явные People, Articles, Research и другие graph entities, типизированные edges, фильтры и neighbors API.
+- Добавлено append-only JSONL-хранилище графа с `FileLock`, corruption detection и безопасными HTTP-ошибками.
+- Добавлены core/API тесты проекции Memory↔Wiki↔Sources, Unicode, duplicate entities и повреждённого graph storage.
 ### Added
 
 - Добавлен Wiki CRUD на Markdown + YAML front matter с поиском, backlinks, source/memory/page links и защитой duplicate slug.

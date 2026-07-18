@@ -30,11 +30,10 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Knowledge Graph.
-2. Semantic Search.
-3. Реестр агентов и skills.
-4. Очередь задач и журнал запусков.
-5. Локальный web-интерфейс.
+1. Semantic Search.
+2. Реестр агентов и skills.
+3. Очередь задач и журнал запусков.
+4. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -43,3 +42,11 @@ Python-дистрибутив явно включает пакеты `app` и `d
 Каждое update/archive сначала сохраняет предыдущую страницу в `history/{page_id}` вместе с actor, reason, operation ID и UTC timestamp. DELETE выполняет soft archive. Запись страниц и snapshots атомарна через временный файл, `fsync` и `os.replace`; операции проекта сериализуются `FileLock`.
 
 Backlinks вычисляются по `related_page_ids` и ссылкам `[[page_id]]`. Поиск охватывает заголовок и Markdown-текст, фильтр тегов использует front matter.
+
+## Knowledge Graph
+
+`app.graph_service.KnowledgeGraphService` объединяет динамическую проекцию канонических Memory/Wiki/Source данных и явные сущности из `dikson_li.graph.JsonlGraphRepository`. Проекция не сохраняет копии контента: узлы содержат стабильные entity IDs и минимальные индексируемые свойства.
+
+Явные graph nodes/edges являются append-only JSONL. Project-scoped `FileLock`, `flush` и `fsync` защищают запись. Повреждённая строка вызывает `GraphCorruptionError` и безопасный HTTP 500.
+
+Типы узлов: project, memory, wiki_page, source, document, person, article, task, research. Типы рёбер: contains, relates_to, references, derived_from, supports, contradicts, depends_on, mentions.
