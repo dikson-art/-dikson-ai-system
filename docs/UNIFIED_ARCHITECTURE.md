@@ -48,3 +48,15 @@ Explicit Entities → JSONL Graph ──┘
 ```
 
 Memory, Wiki и documents остаются источниками истины. Graph Projection создаёт стабильные ссылки при чтении; JSONL Repository хранит только явные внешние сущности и пользовательские связи. Такая схема исключает рассинхронизацию копий.
+
+## Semantic Search flow
+
+```text
+Memory ─┐
+Wiki ───┼─→ Live Search Projection → Embedding Port → Ranked Results
+Sources ┤                              ├─ local
+Graph ──┘                              └─ OpenAI
+   └──────────────────── relation context ────────────↑
+```
+
+Search Projection существует только во время чтения. `SemanticSearchEngine` не знает о FastAPI, файловых путях или OpenAI SDK; он получает типизированные `SearchDocument` и реализацию `EmbeddingModel`. Source-only функция оставлена как тонкий compatibility adapter к тому же сервису, поэтому независимой второй реализации поиска нет.

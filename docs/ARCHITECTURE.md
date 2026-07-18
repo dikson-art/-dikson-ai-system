@@ -30,10 +30,11 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Semantic Search.
-2. Реестр агентов и skills.
-3. Очередь задач и журнал запусков.
-4. Локальный web-интерфейс.
+1. Реестр агентов и skills.
+2. Очередь задач и журнал запусков.
+3. Planning System.
+4. Research Engine.
+5. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -50,3 +51,9 @@ Backlinks вычисляются по `related_page_ids` и ссылкам `[[pa
 Явные graph nodes/edges являются append-only JSONL. Project-scoped `FileLock`, `flush` и `fsync` защищают запись. Повреждённая строка вызывает `GraphCorruptionError` и безопасный HTTP 500.
 
 Типы узлов: project, memory, wiki_page, source, document, person, article, task, research. Типы рёбер: contains, relates_to, references, derived_from, supports, contradicts, depends_on, mentions.
+
+## Semantic Search
+
+`dikson_li.search.SemanticSearchEngine` является каноническим ядром ранжирования и зависит только от порта `EmbeddingModel`. `app.search_service.SemanticSearchService` проецирует Memory, Wiki, Source chunks и явные Graph nodes, не записывая копию контента.
+
+Локальный backend использует детерминированный multilingual feature hashing; OpenAI adapter подключается конфигурацией и вызывает batch Embeddings API. Косинусное сходство дополняется ограниченным graph context boost. Проекционные graph nodes Memory/Wiki/Source не создают повторных результатов.
