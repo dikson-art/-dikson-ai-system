@@ -73,4 +73,19 @@ Append-only Run → Proposal → Human Decision
                           Canonical Memory Core
 ```
 
-Agent audit streams описывают процесс, но не владеют доменными знаниями. Каждый agent memory namespace реализован стабильным tag в Memory Core. Фактическое выполнение tools будет подключено Task Queue и обязано повторно проверять manifest роли перед dispatch.
+Agent audit streams описывают процесс, но не владеют доменными знаниями. Каждый agent memory namespace реализован стабильным tag в Memory Core. Task Queue принимает только прошедшие policy Agent Runs; будущий worker обязан выполнять tools из сохранённого run manifest.
+
+## Task Queue flow
+
+```text
+Policy-validated Agent Run
+           ↓ enqueue
+Immutable Task + Event Stream
+           ↓ atomic claim
+Worker Lease ──heartbeat──┐
+     ├─ complete → succeeded
+     ├─ fail → retry / failed / dead_letter
+     └─ expire → retry / dead_letter
+```
+
+Task Queue хранит orchestration state, а не знания. Worker result остаётся audit payload до преобразования специализированным агентом в proposal; доменные изменения продолжают проходить Agent Protocol и human decision.

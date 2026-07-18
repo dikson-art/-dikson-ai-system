@@ -30,10 +30,10 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Очередь задач и журнал выполнений.
-2. Planning System.
-3. Research Engine.
-4. Git Automation.
+1. Planning System.
+2. Research Engine.
+3. Git Automation.
+4. Documentation Generator.
 5. Локальный web-интерфейс.
 
 ## Wiki
@@ -63,3 +63,9 @@ Backlinks вычисляются по `related_page_ids` и ссылкам `[[pa
 `dikson_li.agents.AgentRegistry` определяет семь встроенных ролей, их responsibilities, tool allowlists, proposal types и memory namespaces. `AgentFrameworkService` применяет policy до записи запуска, валидирует предложения и интегрирует подтверждённую agent memory с каноническим Memory Core.
 
 Runs, proposals и decisions хранятся раздельными append-only JSONL streams. Decision не изменяет proposal, а добавляет audit event. Доступ к собственным знаниям агента является фильтром `agent:{id}` над общим `memory.jsonl`, поэтому второй реализации памяти нет.
+
+## Task Queue
+
+`dikson_li.tasks.JsonlTaskQueue` реализует event-sourced state machine поверх immutable tasks и append-only events. `TaskQueueService` разрешает enqueue только для существующего policy-validated Agent Run. Claim, lease reclamation и переходы состояния сериализуются одним project-scoped `FileLock`.
+
+Priority, delayed availability, idempotency keys, heartbeat, retries, cancellation и dead-letter являются частью core. HTTP adapter скрывает lease token из всех ответов кроме claim. Queue локальна; distributed adapter должен сохранить тот же state-machine contract.
