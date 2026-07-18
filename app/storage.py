@@ -81,13 +81,13 @@ def save_source(project_id: str, filename: str, text: str) -> dict:
 
 
 def search_sources(project_id: str, query: str, limit: int = 6) -> list[dict]:
-    terms = {word.lower() for word in re.findall(r"[\w-]{3,}", query)}
-    matches = []
-    for file in (project_dir(project_id) / "sources").glob("*.json"):
-        source = json.loads(file.read_text(encoding="utf-8"))
-        for index, chunk in enumerate(source["chunks"]):
-            lowered = chunk.lower()
-            score = sum(lowered.count(term) for term in terms)
-            if score:
-                matches.append({"source_id": source["id"], "filename": source["filename"], "chunk": index, "score": score, "text": chunk})
-    return sorted(matches, key=lambda item: item["score"], reverse=True)[:limit]
+    """Compatibility adapter for callers that only search uploaded sources."""
+    from app.search_service import SemanticSearchService
+    from dikson_li.search import SearchEntityType
+
+    hits = SemanticSearchService(settings.dikson_data_dir, project_id).search(
+        query,
+        entity_type=SearchEntityType.SOURCE,
+        limit=limit,
+    )
+    return [hit.model_dump(mode="json", exclude_none=True) for hit in hits]

@@ -8,7 +8,13 @@ from app.config import settings
 from app.graph_service import KnowledgeGraphService
 from app.memory_service import MemoryService
 from app.research import answer
-from app.storage import create_project, extract_text, load_project, save_source, search_sources
+from app.search_service import (
+    SearchCorruptionError,
+    SearchProviderError,
+    SearchStorageError,
+    SemanticSearchService,
+)
+from app.storage import create_project, extract_text, load_project, save_source
 from app.wiki_service import WikiService
 from dikson_li.memory import (
     MemoryCorruptionError,
@@ -17,6 +23,7 @@ from dikson_li.memory import (
     MemoryRecord,
     MemoryStorageError,
 )
+from dikson_li.search import SearchEntityType, SearchResponse
 from dikson_li.graph import (
     DuplicateEntityError,
     EdgeType,
@@ -40,7 +47,7 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.4.0")
+app = FastAPI(title="DIKSON AI System", version="0.5.0")
 
 
 class ProjectCreate(BaseModel):
@@ -150,9 +157,42 @@ async def sources_upload(project_id: str, file: UploadFile = File(...)) -> dict:
 
 
 @app.get("/projects/{project_id}/search")
-def sources_search(project_id: str, q: str) -> dict:
+def semantic_search(
+    project_id: str,
+    q: Annotated[str, Query(min_length=1, max_length=1_000)],
+    entity_type: SearchEntityType | None = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+    min_score: Annotated[float, Query(ge=0, le=1)] = 0.05,
+    include_archived: bool = False,
+) -> SearchResponse:
     ensure_project(project_id)
-    return {"results": search_sources(project_id, q)}
+    try:
+        results = SemanticSearchService(settings.dikson_data_dir, project_id).search(
+            q,
+            entity_type=entity_type,
+            limit=limit,
+            min_score=min_score,
+            include_archived=include_archived,
+        )
+        return SearchResponse(results=results)
+    except (
+        SearchCorruptionError,
+        SearchStorageError,
+        MemoryCorruptionError,
+        MemoryStorageError,
+        WikiCorruptionError,
+        WikiStorageError,
+        GraphCorruptionError,
+        GraphStorageError,
+        Timeout,
+    ) as exc:
+        raise HTTPException(
+            status_code=500, detail="Локальный поисковый индекс повреждён"
+        ) from exc
+    except SearchProviderError as exc:
+        raise HTTPException(
+            status_code=503, detail="Провайдер семантического поиска недоступен"
+        ) from exc
 
 
 @app.post("/projects/{project_id}/research")
