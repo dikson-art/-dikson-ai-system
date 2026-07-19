@@ -74,6 +74,7 @@ class AgentRunCreate(BaseModel):
     objective: str = Field(min_length=1, max_length=4_000)
     requested_tools: set[AgentTool] = Field(default_factory=set)
     context: dict[str, Any] = Field(default_factory=dict)
+    idempotency_key: str | None = Field(default=None, min_length=1, max_length=300)
 
     @field_validator("objective")
     @classmethod
@@ -81,6 +82,16 @@ class AgentRunCreate(BaseModel):
         normalized = value.strip()
         if not normalized:
             raise ValueError("objective must not be blank")
+        return normalized
+
+    @field_validator("idempotency_key")
+    @classmethod
+    def normalize_idempotency_key(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("idempotency_key must not be blank")
         return normalized
 
     @field_validator("context")
@@ -97,6 +108,7 @@ class AgentRun(BaseModel):
     objective: str
     requested_tools: set[AgentTool]
     context: dict[str, Any]
+    idempotency_key: str | None = None
     created_at: datetime
 
 
@@ -226,14 +238,20 @@ class JsonlAgentRepository:
         self.lock_timeout = lock_timeout
 
     def add_run(self, project_id: str, agent_id: AgentId, payload: AgentRunCreate) -> AgentRun:
-        run = AgentRun(
-            id=uuid4().hex,
-            project_id=project_id,
-            agent_id=agent_id,
-            created_at=datetime.now(timezone.utc),
-            **payload.model_dump(),
-        )
         with self._lock():
+            if payload.idempotency_key:
+                for existing in self._read_rows(self.runs_path, AgentRun):
+                    if existing.idempotency_key == payload.idempotency_key:
+                        if existing.agent_id != agent_id:
+                            raise AgentPolicyError("idempotency key belongs to another agent")
+                        return existing
+            run = AgentRun(
+                id=uuid4().hex,
+                project_id=project_id,
+                agent_id=agent_id,
+                created_at=datetime.now(timezone.utc),
+                **payload.model_dump(),
+            )
             self._append(self.runs_path, run.model_dump_json())
         return run
 

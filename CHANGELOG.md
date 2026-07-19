@@ -6,6 +6,17 @@
 
 ### Added
 
+- Добавлен Planning System с валидируемыми DAG, approval/activation lifecycle и вычисляемыми состояниями шагов.
+- Добавлена policy-проверка agent tools и идемпотентная диспетчеризация ready-шагов в Agent Framework и Task Queue.
+- Добавлены append-only plan/event streams, project orchestration lock и восстановление dispatch после частичного сбоя.
+- Добавлены core/service/API тесты циклов, зависимостей вне порядка, policy denial, lifecycle, повторного dispatch, завершения и corruption safety.
+
+### Changed
+
+- Agent Runs получили необязательный `idempotency_key`; существующий API-контракт сохранён.
+
+### Added
+
 - Добавлена durable Task Queue, связанная только с policy-validated Agent Runs.
 - Добавлены priority, delayed availability, project idempotency, atomic leases, heartbeat, retries, cancellation и dead-letter.
 - Добавлены append-only task/event streams, lease reclamation и публичные API-модели без утечки lease token.
