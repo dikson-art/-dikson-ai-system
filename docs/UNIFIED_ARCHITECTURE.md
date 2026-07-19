@@ -89,3 +89,23 @@ Worker Lease ──heartbeat──┐
 ```
 
 Task Queue хранит orchestration state, а не знания. Worker result остаётся audit payload до преобразования специализированным агентом в proposal; доменные изменения продолжают проходить Agent Protocol и human decision.
+
+## Planning flow
+
+```text
+Draft DAG ──human decision──→ Approved Plan
+                                  ↓ activate
+Dependency evaluator ───────→ Ready Steps
+                                  ↓ idempotent dispatch
+                  Agent Run + Queue Task
+                                  ↓ task events
+                 next wave / blocked / completed
+```
+
+Planning Core владеет определением DAG и audit events, но не дублирует Agent Run или Task state. `PlanningService` строит read model из plan events и канонических Task Queue states. Общий idempotency key связывает plan step, agent run и queue task, а orchestration lock сериализует dispatch/cancel внутри проекта.
+
+```text
+FastAPI → Planning Service → Planning Core (plans/events JSONL)
+                    ├──────→ Agent Framework (policy + run audit)
+                    └──────→ Task Queue (execution lifecycle)
+```

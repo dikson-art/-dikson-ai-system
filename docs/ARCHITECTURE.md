@@ -30,11 +30,10 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Planning System.
-2. Research Engine.
-3. Git Automation.
-4. Documentation Generator.
-5. Локальный web-интерфейс.
+1. Research Engine.
+2. Git Automation.
+3. Documentation Generator.
+4. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -69,3 +68,11 @@ Runs, proposals и decisions хранятся раздельными append-only
 `dikson_li.tasks.JsonlTaskQueue` реализует event-sourced state machine поверх immutable tasks и append-only events. `TaskQueueService` разрешает enqueue только для существующего policy-validated Agent Run. Claim, lease reclamation и переходы состояния сериализуются одним project-scoped `FileLock`.
 
 Priority, delayed availability, idempotency keys, heartbeat, retries, cancellation и dead-letter являются частью core. HTTP adapter скрывает lease token из всех ответов кроме claim. Queue локальна; distributed adapter должен сохранить тот же state-machine contract.
+
+## Planning System
+
+`dikson_li.planning.JsonlPlanRepository` хранит неизменяемые определения DAG и append-only lifecycle events. Core валидирует уникальность step IDs, существование зависимостей и отсутствие циклов. `app.planning_service.PlanningService` проверяет agent tool policy, вычисляет готовность шагов и связывает план с Agent Framework и Task Queue.
+
+План требует явного решения перед активацией. Ready-шаг создаёт Agent Run и Queue Task с общим стабильным idempotency key. Project-scoped orchestration lock не допускает гонку между dispatch и cancel; отдельные repository locks защищают JSONL streams. Повтор после сбоя безопасно использует уже созданные run/task и дописывает отсутствующий dispatch event.
+
+Состояния `completed` и `blocked` являются read model над актуальными task states, а не второй изменяемой копией состояния. Планирование не выполняет tools и не записывает доменные знания напрямую.

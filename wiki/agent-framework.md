@@ -23,4 +23,4 @@ Runs, proposals и decisions являются append-only audit records. Они 
 
 ## Следующий этап
 
-Task Queue добавит workers, leases, retries и переходы состояния выполнения. Agent Registry и policy останутся источником разрешений.
+[[task-queue]] предоставляет leases, retries и переходы состояния выполнения. [[planning-system]] создаёт policy-validated runs для готовых DAG steps; Agent Registry остаётся источником разрешений.

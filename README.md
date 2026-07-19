@@ -4,7 +4,7 @@
 
 Основной интеллектуальный стек: OpenAI / ChatGPT / Codex.
 
-Статус: Memory, Wiki, Knowledge Graph, Semantic Search, Agent Framework и Task Queue объединены в FastAPI MVP.
+Статус: Memory, Wiki, Knowledge Graph, Semantic Search, Agent Framework, Task Queue и Planning System объединены в FastAPI MVP.
 
 ## Локальная установка
 
@@ -94,3 +94,17 @@ Durable очередь принимает только существующие 
 - `POST .../heartbeat`, `.../complete`, `.../fail`, `.../cancel` — безопасные переходы состояния.
 
 Claim учитывает priority и delayed `available_at`. `idempotency_key` предотвращает повторный enqueue, а lease token никогда не возвращается из list/get/events API.
+
+## Planning System API
+
+План представляет собой проверенный ациклический граф шагов. Каждый шаг закреплён за встроенной ролью агента, проходит deny-by-default проверку tools и попадает в Task Queue только после подтверждения и активации всего плана.
+
+- `POST /projects/{project_id}/plans` — создать draft-план;
+- `GET /projects/{project_id}/plans` — получить планы с необязательным фильтром `status`;
+- `GET /projects/{project_id}/plans/{plan_id}` — получить вычисленное состояние DAG;
+- `POST .../decision` — подтвердить или отклонить draft;
+- `POST .../activate` — активировать подтверждённый план;
+- `POST .../dispatch` — идемпотентно отправить готовые шаги в Agent Framework и Task Queue;
+- `POST .../cancel` — остановить будущую диспетчеризацию плана.
+
+Зависимый шаг становится `ready` только после успешного завершения всех предшественников. Ошибка, dead-letter или отмена шага переводят активный план в `blocked`; успех всех шагов — в `completed`. Подробности: [docs/PLANNING_SYSTEM.md](docs/PLANNING_SYSTEM.md).
