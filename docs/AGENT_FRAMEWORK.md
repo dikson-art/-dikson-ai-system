@@ -63,3 +63,5 @@ Agent Framework Service
 ## Выполнение
 
 Task Queue принимает только существующие Agent Runs и добавляет durable delivery, leases, retries и audit events. Agent Framework остаётся источником identity и tool policy; очередь не расширяет разрешения роли.
+
+Research Engine создаёт `research_report` proposal от имени Research Agent. Proposal имеет стабильный optional `idempotency_key`, поэтому восстановление после сбоя не создаёт второй отчёт для того же run. Отчёт остаётся pending до human decision и не записывает знания напрямую.

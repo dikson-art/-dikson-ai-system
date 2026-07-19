@@ -15,6 +15,12 @@ from dikson_li.graph import (
     NodeType,
 )
 from dikson_li.memory import JsonlMemoryStore
+from dikson_li.research import (
+    JsonlResearchRepository,
+    ResearchCorruptionError,
+    ResearchStorageError,
+)
+from dikson_li.search import SearchEntityType
 from dikson_li.wiki import MarkdownWikiStore
 
 
@@ -191,6 +197,9 @@ class KnowledgeGraphService:
                     EdgeType.CONTAINS,
                 )
             )
+        research_nodes, research_edges = self._research_projection()
+        nodes.extend(research_nodes)
+        edges.extend(research_edges)
         existing_ids = {node.id for node in nodes}
         edges = [
             edge
@@ -198,6 +207,47 @@ class KnowledgeGraphService:
             if edge.from_node_id in existing_ids and edge.to_node_id in existing_ids
         ]
         return nodes, self._deduplicate_edges(edges)
+
+    def _research_projection(self) -> tuple[list[GraphNode], list[GraphEdge]]:
+        root = self.project_root / "research"
+        if not (root / "studies.jsonl").exists():
+            return [], []
+        try:
+            studies = JsonlResearchRepository(root).list()
+        except (ResearchCorruptionError, ResearchStorageError) as exc:
+            raise GraphCorruptionError("Invalid research projection") from exc
+        nodes = []
+        edges = []
+        for snapshot in studies:
+            node_id = f"research:{snapshot.study.id}"
+            nodes.append(
+                GraphNode(
+                    id=node_id,
+                    project_id=self.project_id,
+                    type=NodeType.RESEARCH,
+                    label=snapshot.study.question,
+                    entity_id=snapshot.study.id,
+                    properties={
+                        "plan_id": snapshot.plan_id,
+                        "evidence_count": len(snapshot.evidence),
+                        "report_completed": snapshot.report is not None,
+                    },
+                    created_at=snapshot.study.created_at,
+                    projected=True,
+                )
+            )
+            edges.append(self._edge(f"project:{self.project_id}", node_id, EdgeType.CONTAINS))
+            for evidence in snapshot.evidence:
+                target = None
+                if evidence.entity_type == SearchEntityType.MEMORY:
+                    target = f"memory:{evidence.entity_id}"
+                elif evidence.entity_type == SearchEntityType.WIKI_PAGE:
+                    target = f"wiki:{evidence.entity_id}"
+                elif evidence.entity_type == SearchEntityType.SOURCE:
+                    target = f"source:{evidence.entity_id}"
+                if target is not None:
+                    edges.append(self._edge(node_id, target, EdgeType.DERIVED_FROM))
+        return nodes, edges
 
     def _source_records(self) -> dict[str, dict]:
         records = {}

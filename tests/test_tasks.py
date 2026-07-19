@@ -50,34 +50,37 @@ def test_priority_idempotency_lease_and_completion(tmp_path: Path) -> None:
     high = enqueue(queue, "high", priority=10)
 
     assert repeated.task.id == low.task.id
-    claimed = queue.claim(TaskClaimCreate(worker_id="worker-1"), now=NOW)
+    assert queue.claim(TaskClaimCreate(worker_id="none", task_id="missing"), now=NOW) is None
+    claimed = queue.claim(TaskClaimCreate(worker_id="worker-1", task_id=low.task.id), now=NOW)
     assert claimed is not None
-    assert claimed.task.id == high.task.id
+    assert claimed.task.id == low.task.id
     assert claimed.status == "running"
     assert claimed.attempts == 1
     with pytest.raises(TaskLeaseError):
         queue.complete(
-            high.task.id,
+            low.task.id,
             TaskCompleteCreate(lease_token="wrong"),
             now=NOW + timedelta(seconds=1),
         )
 
     heartbeat = queue.heartbeat(
-        high.task.id,
+        low.task.id,
         TaskLeaseCreate(lease_token=claimed.lease_token, lease_seconds=120),
         now=NOW + timedelta(seconds=1),
     )
     completed = queue.complete(
-        high.task.id,
+        low.task.id,
         TaskCompleteCreate(lease_token=claimed.lease_token, result={"proposal_id": "p1"}),
         now=NOW + timedelta(seconds=2),
     )
     assert heartbeat.lease_expires_at == NOW + timedelta(seconds=121)
     assert completed.status == "succeeded"
     assert completed.result == {"proposal_id": "p1"}
+    next_claim = queue.claim(TaskClaimCreate(worker_id="worker-2"), now=NOW)
+    assert next_claim.task.id == high.task.id
     with pytest.raises(TaskStateError):
         queue.cancel(
-            high.task.id,
+            low.task.id,
             TaskCancelCreate(actor="user", reason="too late"),
             now=NOW + timedelta(seconds=3),
         )

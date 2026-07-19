@@ -30,10 +30,9 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Research Engine.
-2. Git Automation.
-3. Documentation Generator.
-4. Локальный web-интерфейс.
+1. Git Automation.
+2. Documentation Generator.
+3. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -76,3 +75,11 @@ Priority, delayed availability, idempotency keys, heartbeat, retries, cancellati
 План требует явного решения перед активацией. Ready-шаг создаёт Agent Run и Queue Task с общим стабильным idempotency key. Project-scoped orchestration lock не допускает гонку между dispatch и cancel; отдельные repository locks защищают JSONL streams. Повтор после сбоя безопасно использует уже созданные run/task и дописывает отсутствующий dispatch event.
 
 Состояния `completed` и `blocked` являются read model над актуальными task states, а не второй изменяемой копией состояния. Планирование не выполняет tools и не записывает доменные знания напрямую.
+
+## Research Engine
+
+`dikson_li.research.JsonlResearchRepository` является каноническим владельцем Research Studies, evidence snapshots и reports. Study definition неизменяем, а связь с планом, собранные доказательства и итоговый отчёт записываются append-only events. `app.research_service.ResearchEngineService` координирует существующие Planning, Agent, Task, Search и Graph contracts.
+
+Каждое исследование создаёт draft DAG `gather-evidence → synthesize-report`. После human approve/activate engine диспетчеризует ready wave, получает lease только конкретной связанной задачи, объединяет результаты нескольких semantic queries, назначает citations `E1..En`, создаёт идемпотентный `research_report` proposal и завершает task. Повторный advance завершённого исследования не создаёт новых runs, tasks или proposals.
+
+OpenAI synthesis реализован заменяемым адаптером поверх Responses API с `store=False`; локальный адаптер сохраняет полностью автономный evidence workflow. Knowledge Graph проецирует `research:{study_id}` и `derived_from` связи к Memory, Wiki и Sources, не копируя второй набор исследовательских данных.

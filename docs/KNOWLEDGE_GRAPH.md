@@ -13,10 +13,10 @@ Knowledge Graph связывает Projects, Memory, Tasks, Wiki Pages, Document
 ## Поток
 
 ```text
-Canonical Memory ─┐
-Canonical Wiki ───┼─→ KnowledgeGraphService → Snapshot → API
-Project Sources ──┘             ↑
-                         JSONL Graph Repository
+Canonical Memory ──┐
+Canonical Wiki ────┼─→ KnowledgeGraphService → Snapshot → API
+Project Sources ───┤             ↑
+Research Studies ──┘      JSONL Graph Repository
 ```
 
 ## Ограничения
@@ -24,4 +24,5 @@ Project Sources ──┘             ↑
 - traversal пока ограничен непосредственными neighbors;
 - удаление и изменение graph entities отсутствуют;
 - полнотекстовый и семантический поиск выполняет канонический `SemanticSearchService`;
+- Research Studies проецируются с `derived_from` связями к сохранённым evidence entities;
 - проекционный snapshot строится при чтении и рассчитан на текущий локальный масштаб.

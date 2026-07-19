@@ -66,6 +66,29 @@ def test_repository_is_append_only_and_reports_corruption(tmp_path: Path) -> Non
         run.id,
         AgentProposalCreate(type="review", title="Review result", summary="No blocking findings"),
     )
+    idempotent_proposal = repository.add_proposal(
+        "project",
+        AgentId.REVIEW,
+        run.id,
+        AgentProposalCreate(
+            type="review",
+            title="Idempotent review",
+            summary="Stable result",
+            idempotency_key="review-proposal-1",
+        ),
+    )
+    same_proposal = repository.add_proposal(
+        "project",
+        AgentId.REVIEW,
+        run.id,
+        AgentProposalCreate(
+            type="review",
+            title="Repeated request",
+            summary="Must return the original",
+            idempotency_key="review-proposal-1",
+        ),
+    )
+    assert same_proposal.id == idempotent_proposal.id
     decision = repository.decide(
         "project",
         proposal.id,
@@ -73,7 +96,7 @@ def test_repository_is_append_only_and_reports_corruption(tmp_path: Path) -> Non
     )
 
     assert repository.runs() == [run, repeated_run]
-    assert repository.proposals() == [proposal]
+    assert repository.proposals() == [proposal, idempotent_proposal]
     assert repository.decisions() == [decision]
     with pytest.raises(DuplicateDecisionError):
         repository.decide(

@@ -6,6 +6,19 @@
 
 ### Added
 
+- Добавлен Research Engine с идемпотентными studies, append-only evidence/report events и двухшаговым approved DAG.
+- Добавлены multi-query evidence collection, дедупликация, стабильные citations, локальный synthesis fallback и stateless OpenAI Responses adapter.
+- Research execution интегрирован с Agent Framework и Task Queue через task-specific leases; итог создаётся как pending `research_report` proposal.
+- Knowledge Graph автоматически проецирует Research Studies и `derived_from` связи к Memory, Wiki и Sources.
+- Добавлены core/service/API тесты idempotency, corruption safety, approval boundary, полного workflow, OpenAI contract и graph projection.
+
+### Changed
+
+- Версия повышена до 0.9.0; старый `POST /projects/{project_id}/research` сохранён как быстрый compatibility adapter.
+- Agent Proposals получили optional `idempotency_key`, а Task Claim — optional `task_id` без изменения существующего поведения по умолчанию.
+
+### Added
+
 - Добавлен Planning System с валидируемыми DAG, approval/activation lifecycle и вычисляемыми состояниями шагов.
 - Добавлена policy-проверка agent tools и идемпотентная диспетчеризация ready-шагов в Agent Framework и Task Queue.
 - Добавлены append-only plan/event streams, project orchestration lock и восстановление dispatch после частичного сбоя.

@@ -109,3 +109,25 @@ FastAPI → Planning Service → Planning Core (plans/events JSONL)
                     ├──────→ Agent Framework (policy + run audit)
                     └──────→ Task Queue (execution lifecycle)
 ```
+
+## Research flow
+
+```text
+Research Study → Draft Research Plan → Human approve / activate
+                                      ↓
+                         gather-evidence task
+                                      ↓
+             Semantic Search → dedupe → citations E1..En
+                                      ↓
+                        synthesize-report task
+                         ├─ local transparent fallback
+                         └─ OpenAI Responses adapter
+                                      ↓
+                 pending research_report proposal
+                                      ↓
+                      Human decision / later commit
+```
+
+Research Core хранит historical evidence/report snapshots, потому что отчёт должен оставаться проверяемым даже после изменения исходных материалов. Он не копирует execution state: status читается из канонического Planning/Task read model. Research Agent policy и proposal audit принадлежат Agent Framework; поиск принадлежит Semantic Search; связи исследования строятся Knowledge Graph как read projection.
+
+`advance` использует task-specific lease и общий project orchestration lock. Study, plan, runs, tasks и proposal имеют стабильные idempotency boundaries, поэтому повторный запрос не создаёт дубликаты после частичного сбоя.

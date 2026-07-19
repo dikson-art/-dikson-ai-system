@@ -11,6 +11,7 @@
 - анализирует источники и Semantic Search results;
 - строит доказательную базу;
 - предлагает research reports и фиксирует пробелы.
+- исполняет только подтверждённые research plan steps через Task Queue lease.
 
 ### Planning Agent
 
@@ -54,7 +55,7 @@
 
 ## Предложения и решения
 
-Proposal содержит agent/run IDs, тип, title, summary, JSON payload и timestamp. Допустимые типы определены manifest конкретного агента. Proposal имеет статус `pending`, пока отдельное decision event не установит `approved` или `rejected`. Второе решение для того же proposal запрещено.
+Proposal содержит agent/run IDs, тип, title, summary, JSON payload, optional `idempotency_key` и timestamp. Допустимые типы определены manifest конкретного агента. Proposal имеет статус `pending`, пока отдельное decision event не установит `approved` или `rejected`. Второе решение для того же proposal запрещено.
 
 ## Персональная память
 
