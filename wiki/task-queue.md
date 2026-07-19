@@ -23,4 +23,4 @@ Durable очередь связывает policy-validated Agent Run с worker e
 
 ## Граница
 
-Queue управляет доставкой и состоянием, но не знает, как выполнять конкретный Agent Tool. [[planning-system]] диспетчеризует ready DAG steps поверх стабильного queue contract; Research Engine добавит специализированное выполнение исследовательских payloads.
+Queue управляет доставкой и состоянием, но не знает, как выполнять конкретный Agent Tool. [[planning-system]] диспетчеризует ready DAG steps, а [[research-engine]] выполняет связанные research payloads через точечный lease.

@@ -21,6 +21,6 @@ Runs, proposals и decisions являются append-only audit records. Они 
 
 Персональная память — это отфильтрованное представление канонического Memory Core по `agent:{id}`. Она создаётся только из подтверждённого `agent_memory` proposal и хранит reviewer/proposal metadata.
 
-## Следующий этап
+## Выполнение
 
-[[task-queue]] предоставляет leases, retries и переходы состояния выполнения. [[planning-system]] создаёт policy-validated runs для готовых DAG steps; Agent Registry остаётся источником разрешений.
+[[task-queue]] предоставляет leases, retries и переходы состояния выполнения. [[planning-system]] создаёт policy-validated runs для готовых DAG steps, а [[research-engine]] сохраняет итог как идемпотентный pending proposal. Agent Registry остаётся источником разрешений.

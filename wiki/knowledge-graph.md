@@ -18,8 +18,9 @@ status: implemented
 - `memory:{id}` — память или task;
 - `wiki:{id}` — Wiki-страница;
 - `source:{id}` — source/document.
+- `research:{id}` — Research Study и связи с evidence.
 
-People, Articles и Research создаются как явные entities. Пользовательские связи сохраняются в project-scoped JSONL.
+Research проецируется из [[research-engine]]. People, Articles и другие внешние сущности создаются явно; пользовательские связи сохраняются в project-scoped JSONL.
 
 ## Связи
 
