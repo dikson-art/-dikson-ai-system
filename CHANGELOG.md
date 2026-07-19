@@ -6,6 +6,16 @@
 
 ### Added
 
+- Добавлен Documentation Generator для детерминированных API Reference и Agent Catalog из канонических runtime contracts.
+- Добавлены immutable documentation snapshots, source/artifact SHA-256, идемпотентная генерация и pending proposals Documentation Agent.
+- Добавлены FastAPI endpoints и тесты renderer, snapshot repository, proposal integration и corruption safety.
+
+### Changed
+
+- Версия повышена до 0.11.0; генератор не изменяет README, Wiki или Git без отдельного approval workflow.
+
+### Added
+
 - Добавлен канонический Git Automation Core с безопасными status/diff, изолированным worktree и созданием коммита только в новой ветке `agent/*`.
 - Добавлено исполнение только утверждённых `code_change` proposals Coding Agent, включая `expected_head`, идемпотентность и append-only журнал результатов.
 - Добавлены Git API endpoints и core/API тесты approval boundary, успешного commit, stale base, protected branch, invalid patch и повреждённого журнала.

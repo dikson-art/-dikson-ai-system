@@ -26,4 +26,4 @@ Research Engine превращает вопрос в approved DAG, evidence snap
 
 Локальный режим всегда доступен и явно сообщает о пробелах. OpenAI adapter использует stateless Responses API и не меняет доменное ядро.
 
-Git Automation реализован поверх существующих Coding и Review Agent contracts; см. [[git-automation]]. Следующий приоритет проекта — Documentation Generator.
+Git Automation и [[documentation-generator]] реализованы поверх существующих Agent contracts. Следующий приоритет проекта — локальный web-интерфейс.
