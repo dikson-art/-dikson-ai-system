@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from app.agent_api import router as agent_router
 from app.config import settings
 from app.graph_service import KnowledgeGraphService
+from app.git_api import router as git_router
 from app.memory_service import MemoryService
 from app.planning_api import router as planning_router
 from app.research_api import router as research_router
@@ -55,6 +56,7 @@ app.include_router(agent_router)
 app.include_router(task_router)
 app.include_router(planning_router)
 app.include_router(research_router)
+app.include_router(git_router)
 
 
 class ProjectCreate(BaseModel):
