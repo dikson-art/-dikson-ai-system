@@ -58,7 +58,7 @@ Agent Framework Service
 - для proposal допустимо только одно решение;
 - неподтверждённая память не коммитится;
 - повторный commit возвращает ту же Memory record;
-- Agent Framework не исполняет shell, Git или сетевые операции самостоятельно.
+- Agent Framework не исполняет shell, Git или сетевые операции самостоятельно; одобренный `code_change` может быть передан отдельному deny-by-default Git Automation adapter.
 
 ## Выполнение
 

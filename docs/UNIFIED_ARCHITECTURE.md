@@ -131,3 +131,21 @@ Research Study → Draft Research Plan → Human approve / activate
 Research Core хранит historical evidence/report snapshots, потому что отчёт должен оставаться проверяемым даже после изменения исходных материалов. Он не копирует execution state: status читается из канонического Planning/Task read model. Research Agent policy и proposal audit принадлежат Agent Framework; поиск принадлежит Semantic Search; связи исследования строятся Knowledge Graph как read projection.
 
 `advance` использует task-specific lease и общий project orchestration lock. Study, plan, runs, tasks и proposal имеют стабильные idempotency boundaries, поэтому повторный запрос не создаёт дубликаты после частичного сбоя.
+
+## Git Automation flow
+
+```text
+Coding Agent Run → code_change proposal → Human approval
+                                             ↓
+                              Git Automation Service
+                                             ↓
+                    Canonical Git Core / policy checks
+                              ├─ status / diff (read only)
+                              └─ isolated worktree
+                                      ↓
+                         new agent/* branch + commit
+                                      ↓
+                        append-only execution journal
+```
+
+Git Core не дублирует Agent decision state: он читает утверждение через Agent Framework и хранит только аудит фактического исполнения. Повторный execute для одного proposal идемпотентен. `expected_head` защищает от применения к неожиданной базе; временный worktree не затрагивает активную ветку пользователя.
