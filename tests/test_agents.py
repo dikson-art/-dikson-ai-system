@@ -42,6 +42,24 @@ def test_repository_is_append_only_and_reports_corruption(tmp_path: Path) -> Non
         AgentId.REVIEW,
         AgentRunCreate(objective="Review the change", requested_tools={"code_read"}),
     )
+    repeated_run = repository.add_run(
+        "project",
+        AgentId.REVIEW,
+        AgentRunCreate(
+            objective="Review the change",
+            requested_tools={"code_read"},
+            idempotency_key="review-1",
+        ),
+    )
+    same_run = repository.add_run(
+        "project",
+        AgentId.REVIEW,
+        AgentRunCreate(
+            objective="A repeated request",
+            idempotency_key="review-1",
+        ),
+    )
+    assert same_run.id == repeated_run.id
     proposal = repository.add_proposal(
         "project",
         AgentId.REVIEW,
@@ -54,7 +72,7 @@ def test_repository_is_append_only_and_reports_corruption(tmp_path: Path) -> Non
         AgentDecisionCreate(outcome="approved", reviewer="lead", reason="verified"),
     )
 
-    assert repository.runs() == [run]
+    assert repository.runs() == [run, repeated_run]
     assert repository.proposals() == [proposal]
     assert repository.decisions() == [decision]
     with pytest.raises(DuplicateDecisionError):

@@ -8,6 +8,7 @@ from app.agent_api import router as agent_router
 from app.config import settings
 from app.graph_service import KnowledgeGraphService
 from app.memory_service import MemoryService
+from app.planning_api import router as planning_router
 from app.research import answer
 from app.search_service import (
     SearchCorruptionError,
@@ -49,9 +50,10 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.7.0")
+app = FastAPI(title="DIKSON AI System", version="0.8.0")
 app.include_router(agent_router)
 app.include_router(task_router)
+app.include_router(planning_router)
 
 
 class ProjectCreate(BaseModel):
