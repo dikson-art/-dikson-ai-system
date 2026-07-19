@@ -19,4 +19,4 @@ Git Automation исполняет только подтверждённые `cod
 - один proposal имеет один append-only execution audit;
 - ошибка требует нового proposal, а не скрытого повторного изменения.
 
-Следующий слой — Documentation Generator, использующий [[agent-framework]] и результаты Git Automation без обхода approval boundary.
+[[documentation-generator]] использует [[agent-framework]] и результаты Git Automation без обхода approval boundary. Следующий приоритет — локальный web-интерфейс.

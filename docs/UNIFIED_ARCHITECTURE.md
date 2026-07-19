@@ -149,3 +149,17 @@ Coding Agent Run → code_change proposal → Human approval
 ```
 
 Git Core не дублирует Agent decision state: он читает утверждение через Agent Framework и хранит только аудит фактического исполнения. Повторный execute для одного proposal идемпотентен. `expected_head` защищает от применения к неожиданной базе; временный worktree не затрагивает активную ветку пользователя.
+
+## Documentation Generator flow
+
+```text
+OpenAPI + Agent Registry → deterministic Markdown renderer
+                                      ↓
+                         immutable snapshot + hashes
+                                      ↓
+                    pending Documentation Agent proposal
+                                      ↓
+                              human review
+```
+
+Snapshot хранит исторический результат генерации, но не становится вторым источником API или agent contracts. Источниками истины остаются FastAPI OpenAPI и Agent Registry; публикация документации отделена от генерации.

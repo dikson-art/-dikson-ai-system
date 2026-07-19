@@ -30,8 +30,7 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Documentation Generator.
-2. Локальный web-интерфейс.
+1. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -88,3 +87,7 @@ OpenAI synthesis реализован заменяемым адаптером п
 `dikson_li.git_automation.GitAutomationCore` — единственный владелец Git-команд, валидации change set, изолированного worktree и append-only execution journal. `app.git_service.GitAutomationService` является application adapter: он проверяет, что proposal создан Coding Agent, имеет тип `code_change` и явно одобрен человеком.
 
 Командная поверхность закрыта по умолчанию: доступны status, diff и создание одного коммита в новой ветке `agent/*`. Аргументы передаются `subprocess.run` без shell; interactive prompts, signing и repository hooks отключены. Push, merge, reset существующих веток и произвольные Git-команды отсутствуют.
+
+## Documentation Generator
+
+`dikson_li.documentation.DocumentationGenerator` является чистым каноническим renderer над OpenAPI и Agent Registry manifests. `DocumentationService` сохраняет immutable snapshot и создаёт pending proposal встроенного Documentation Agent. Генератор не изменяет README, Wiki или Git напрямую и не копирует approval state.
