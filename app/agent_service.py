@@ -88,6 +88,9 @@ class AgentFrameworkService:
     def decide(self, proposal_id: str, payload: AgentDecisionCreate) -> AgentDecision:
         return self.repository.decide(self.project_id, proposal_id, payload)
 
+    def proposal(self, proposal_id: str) -> AgentProposalView:
+        return self._proposal_view(proposal_id)
+
     def commit_agent_memory(self, proposal_id: str) -> MemoryRecord:
         with FileLock(str(self.project_root / "agents" / ".memory-commit.lock")):
             existing = self._memory_for_proposal(proposal_id)

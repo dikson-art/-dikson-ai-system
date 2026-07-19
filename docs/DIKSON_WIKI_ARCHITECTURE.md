@@ -30,8 +30,9 @@ wiki/
 - task — задача;
 - source — внешний источник.
 
-## Следующий слой
+## Реализованные связанные слои
 
-- индекс связей между страницами;
-- семантический поиск;
-- агенты обслуживания Wiki.
+- backlinks и Knowledge Graph;
+- Semantic Search;
+- Wiki Agent proposals через Agent Framework;
+- Git Automation для подтверждённых code changes.

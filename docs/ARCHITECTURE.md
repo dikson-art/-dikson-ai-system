@@ -30,9 +30,8 @@ Python-дистрибутив явно включает пакеты `app` и `d
 
 ## Следующие слои
 
-1. Git Automation.
-2. Documentation Generator.
-3. Локальный web-интерфейс.
+1. Documentation Generator.
+2. Локальный web-интерфейс.
 
 ## Wiki
 
@@ -83,3 +82,9 @@ Priority, delayed availability, idempotency keys, heartbeat, retries, cancellati
 Каждое исследование создаёт draft DAG `gather-evidence → synthesize-report`. После human approve/activate engine диспетчеризует ready wave, получает lease только конкретной связанной задачи, объединяет результаты нескольких semantic queries, назначает citations `E1..En`, создаёт идемпотентный `research_report` proposal и завершает task. Повторный advance завершённого исследования не создаёт новых runs, tasks или proposals.
 
 OpenAI synthesis реализован заменяемым адаптером поверх Responses API с `store=False`; локальный адаптер сохраняет полностью автономный evidence workflow. Knowledge Graph проецирует `research:{study_id}` и `derived_from` связи к Memory, Wiki и Sources, не копируя второй набор исследовательских данных.
+
+## Git Automation
+
+`dikson_li.git_automation.GitAutomationCore` — единственный владелец Git-команд, валидации change set, изолированного worktree и append-only execution journal. `app.git_service.GitAutomationService` является application adapter: он проверяет, что proposal создан Coding Agent, имеет тип `code_change` и явно одобрен человеком.
+
+Командная поверхность закрыта по умолчанию: доступны status, diff и создание одного коммита в новой ветке `agent/*`. Аргументы передаются `subprocess.run` без shell; interactive prompts, signing и repository hooks отключены. Push, merge, reset существующих веток и произвольные Git-команды отсутствуют.

@@ -81,4 +81,4 @@ Graph projection создаёт узел `research:{study_id}` типа `researc
 - Research Agent не коммитит Memory или Wiki напрямую;
 - отчёт требует отдельного решения через Agent Proposal API;
 - внешнее web-research и ingestion новых источников не имитируются локальным поиском и могут быть добавлены позднее как отдельные разрешённые adapters;
-- следующий слой Git Automation должен использовать существующие Coding/Review proposals и не расширять research permissions.
+- Git Automation использует существующие Coding/Review proposals и не расширяет research permissions; следующий приоритет — Documentation Generator.

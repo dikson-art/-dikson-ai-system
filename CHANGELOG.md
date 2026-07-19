@@ -6,6 +6,16 @@
 
 ### Added
 
+- Добавлен канонический Git Automation Core с безопасными status/diff, изолированным worktree и созданием коммита только в новой ветке `agent/*`.
+- Добавлено исполнение только утверждённых `code_change` proposals Coding Agent, включая `expected_head`, идемпотентность и append-only журнал результатов.
+- Добавлены Git API endpoints и core/API тесты approval boundary, успешного commit, stale base, protected branch, invalid patch и повреждённого журнала.
+
+### Changed
+
+- Версия повышена до 0.10.0; Git subprocess adapter передаёт аргументы без shell и отключает prompts, hooks и signing.
+
+### Added
+
 - Добавлен Research Engine с идемпотентными studies, append-only evidence/report events и двухшаговым approved DAG.
 - Добавлены multi-query evidence collection, дедупликация, стабильные citations, локальный synthesis fallback и stateless OpenAI Responses adapter.
 - Research execution интегрирован с Agent Framework и Task Queue через task-specific leases; итог создаётся как pending `research_report` proposal.
