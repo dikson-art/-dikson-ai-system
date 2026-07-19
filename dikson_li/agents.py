@@ -119,6 +119,7 @@ class AgentProposalCreate(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     summary: str = Field(min_length=1, max_length=10_000)
     payload: dict[str, Any] = Field(default_factory=dict)
+    idempotency_key: str | None = Field(default=None, min_length=1, max_length=300)
 
     @field_validator("title", "summary")
     @classmethod
@@ -133,6 +134,16 @@ class AgentProposalCreate(BaseModel):
     def payload_must_be_json(cls, value: dict[str, Any]) -> dict[str, Any]:
         _ensure_json(value, "payload")
         return value
+
+    @field_validator("idempotency_key")
+    @classmethod
+    def normalize_proposal_idempotency_key(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("idempotency_key must not be blank")
+        return normalized
 
 
 class AgentProposal(AgentProposalCreate):
@@ -270,6 +281,14 @@ class JsonlAgentRepository:
             run = self._find(self._read_rows(self.runs_path, AgentRun), run_id)
             if run.agent_id != agent_id:
                 raise KeyError(run_id)
+            if payload.idempotency_key:
+                for existing in self._read_rows(self.proposals_path, AgentProposal):
+                    if existing.idempotency_key == payload.idempotency_key:
+                        if existing.run_id != run_id or existing.agent_id != agent_id:
+                            raise AgentPolicyError(
+                                "proposal idempotency key belongs to another run"
+                            )
+                        return existing
             proposal = AgentProposal(
                 id=uuid4().hex,
                 project_id=project_id,

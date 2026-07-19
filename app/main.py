@@ -9,7 +9,7 @@ from app.config import settings
 from app.graph_service import KnowledgeGraphService
 from app.memory_service import MemoryService
 from app.planning_api import router as planning_router
-from app.research import answer
+from app.research_api import router as research_router
 from app.search_service import (
     SearchCorruptionError,
     SearchProviderError,
@@ -50,19 +50,16 @@ from dikson_li.wiki import (
     WikiStorageError,
 )
 
-app = FastAPI(title="DIKSON AI System", version="0.8.0")
+app = FastAPI(title="DIKSON AI System", version="0.9.0")
 app.include_router(agent_router)
 app.include_router(task_router)
 app.include_router(planning_router)
+app.include_router(research_router)
 
 
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=2)
     description: str = ""
-
-
-class ResearchRequest(BaseModel):
-    question: str = Field(min_length=2)
 
 
 def memory_service() -> MemoryService:
@@ -199,14 +196,6 @@ def semantic_search(
         raise HTTPException(
             status_code=503, detail="Провайдер семантического поиска недоступен"
         ) from exc
-
-
-@app.post("/projects/{project_id}/research")
-def research(project_id: str, payload: ResearchRequest) -> dict:
-    try:
-        return answer(project_id, payload.question)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Проект не найден") from exc
 
 def wiki_store(project_id: str):
     ensure_project(project_id)

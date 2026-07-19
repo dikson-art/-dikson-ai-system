@@ -80,13 +80,16 @@ class TaskClaimCreate(BaseModel):
     worker_id: str = Field(min_length=1, max_length=200)
     lease_seconds: int = Field(default=60, ge=5, le=3_600)
     agent_id: AgentId | None = None
+    task_id: str | None = Field(default=None, min_length=1, max_length=200)
 
-    @field_validator("worker_id")
+    @field_validator("worker_id", "task_id")
     @classmethod
-    def normalize_worker(cls, value: str) -> str:
+    def normalize_worker(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         normalized = value.strip()
         if not normalized:
-            raise ValueError("worker_id must not be blank")
+            raise ValueError("value must not be blank")
         return normalized
 
 
@@ -293,6 +296,8 @@ class JsonlTaskQueue:
             eligible = []
             for task in tasks:
                 view = self._view(task, by_task.get(task.id, []))
+                if payload.task_id is not None and task.id != payload.task_id:
+                    continue
                 if payload.agent_id is not None and task.agent_id != payload.agent_id:
                     continue
                 if view.status == TaskStatus.QUEUED and view.available_at <= timestamp:
